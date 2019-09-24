@@ -16,10 +16,15 @@
 (hugsql/set-adapter! (next-adapter/hugsql-adapter-next-jdbc {:builder-fn result-set/as-maps}))
 
 (def-db-fns "sql/user.sql")
+(def-db-fns "sql/comment.sql")
 
 (comment
-  (require '[integrant.repl.state])
-  (def ds (get-in integrant.repl.state/system [:db :datasource]))
+  (require ds '[comment.config :as config])
+  (def ds (:datasource (setup-connection-pool (:db (config/config)))))
+  (require '[next.jdbc :as jdbc])
+  (jdbc/execute! ds ["select * from comment"])
+  (all-comments ds)
+  (create-comment ds {:name "me" :slug "hi" :text "not bad" :parent-comment-id nil})
   (all-users ds)
   (get-user-by-email ds {:email "aa@email"})
   (require '[buddy.hashers :as hashers])

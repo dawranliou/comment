@@ -14,7 +14,7 @@
   (migratus/rollback config))
 
 (defn create [migration-name]
-  (migratus/create migration-name))
+  (migratus/create config migration-name))
 
 (defn -main [action & [arg]]
   (case action
