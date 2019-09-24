@@ -12,3 +12,6 @@
 
 (defn system []
   integrant.repl.state/system)
+
+(comment
+  (go))
