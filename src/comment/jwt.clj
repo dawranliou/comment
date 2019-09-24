@@ -4,10 +4,10 @@
    [comment.config :as config]))
 
 (defn sign [payload]
-  (jwt/sign payload (get-in (config/config) [:secrets :jwt :auth-key]) {:alg :hs512}))
+  (jwt/sign payload (get-in (config/secrets) [:jwt :auth-key]) {:alg :hs512}))
 
 (defn unsign [payload]
-  (jwt/unsign payload (get-in (config/config) [:secrets :jwt :auth-key]) {:alg :hs512}))
+  (jwt/unsign payload (get-in (config/secrets) [:jwt :auth-key]) {:alg :hs512}))
 
 (defn create-token
   "Creates signed jwt-token with user data as payload.

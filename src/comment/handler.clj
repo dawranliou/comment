@@ -8,7 +8,8 @@
    [reitit.ring.middleware.muuntaja :as muuntaja]
    [reitit.swagger :as swagger]
    [reitit.swagger-ui :as swagger-ui]
-   [ring.middleware.params :as params]))
+   [ring.middleware.params :as params]
+   [comment.db]))
 
 (def ok (constantly {:status 200 :body "ok"}))
 
@@ -24,15 +25,26 @@
       {:swagger {:tags ["comments"]}}
 
       [""
-       {:get  {:summary "get comments"
-               :handler ok}
+       {:get {:summary "get comments"
+              :handler
+              (fn [_]
+                {:status 200
+                 :body   (comment.db/all-comments db)})}
+
         :post {:summary "create comments"
-               :handler ok}}]
+               :handler
+               (fn [{:keys [body-params]}]
+                 {:status 201
+                  :body   (comment.db/create-comment body-params)})}}]
 
       ["/:slug"
        {:get {:summary    "get all comments for a page"
               :parameters {:path {:slug string?}}
-              :handler    ok}}]
+              :handler
+              (fn [{:keys [parameters]}]
+                (let [slug (-> parameters :path (select-keys [:slug]))]
+                  {:status 200
+                   :body   (comment.db/get-comments-by-slug db slug)}))}}]
 
       ["/id/:id"
        {:parameters {:path {:id int?}}}

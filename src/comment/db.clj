@@ -8,9 +8,9 @@
    (com.zaxxer.hikari HikariDataSource)))
 
 (defn setup-connection-pool [db-spec]
-  {:datasource (connection/->pool HikariDataSource db-spec)})
+  (connection/->pool HikariDataSource db-spec))
 
-(defn stop-connection-pool [{:keys [datasource]}]
+(defn stop-connection-pool [datasource]
   (.close datasource))
 
 (hugsql/set-adapter! (next-adapter/hugsql-adapter-next-jdbc {:builder-fn result-set/as-maps}))
@@ -19,8 +19,8 @@
 (def-db-fns "sql/comment.sql")
 
 (comment
-  (require ds '[comment.config :as config])
-  (def ds (:datasource (setup-connection-pool (:db (config/config)))))
+  (require '[comment.config :as config])
+  (def ds (setup-connection-pool (:db (config/system-config))))
   (require '[next.jdbc :as jdbc])
   (jdbc/execute! ds ["select * from comment"])
   (all-comments ds)

@@ -10,8 +10,8 @@
 (defmethod ig/init-key :db [_ db-spec]
   (db/setup-connection-pool db-spec))
 
-(defmethod ig/halt-key! :db [_ pool]
-  (db/stop-connection-pool pool))
+(defmethod ig/halt-key! :db [_ datasource]
+  (db/stop-connection-pool datasource))
 
 (defmethod ig/init-key :app [_ config]
   (handler/create-app config))
@@ -30,7 +30,7 @@
 
 (defn start-system!
   ([]
-   (start-system! config/config))
+   (start-system! config/system-config))
   ([config]
    (let [system (ig/init config)]
      (prn "System started with config:")
@@ -42,4 +42,4 @@
   (ig/halt! system))
 
 (defn -main [& args]
-  (start-system! config/config))
+  (start-system! config/system-config))

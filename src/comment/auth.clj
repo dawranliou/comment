@@ -21,4 +21,4 @@
   (backends-httpbasic/http-basic-backend {:authfn (partial basic-auth db)}))
 
 (def token-backend
-  (backends/jws {:secret (get-in (config/config) [:secrets :jwt :auth-key]) :options {:alg :hs512}}))
+  (backends/jws {:secret (get-in (config/secrets) [:jwt :auth-key]) :options {:alg :hs512}}))

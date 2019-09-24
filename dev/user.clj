@@ -4,7 +4,7 @@
    [comment.system :as system]
    [comment.config :as config]))
 
-(ig-repl/set-prep! config/default-config)
+(ig-repl/set-prep! config/system-config)
 
 (def go ig-repl/go)
 (def halt ig-repl/halt)
@@ -14,4 +14,6 @@
   integrant.repl.state/system)
 
 (comment
-  (go))
+  (go)
+  (reset)
+  (halt))
