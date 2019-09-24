@@ -12,7 +12,7 @@ SELECT
 FROM
   user;
 
--- :name get-user-by-id
+-- :name get-user-by-email
 -- :command :query
 -- :result :one
 -- :doc Selects the user matching the id
@@ -26,7 +26,7 @@ SELECT
 FROM
   user
 WHERE
-  id = :id ::uuid;
+  email = :email;
 
 -- :name insert-user!
 -- :command :insert

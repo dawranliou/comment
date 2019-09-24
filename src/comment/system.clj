@@ -30,18 +30,16 @@
 
 (defn start-system!
   ([]
-   (start-system! config/default-config))
+   (start-system! config/config))
   ([config]
    (let [system (ig/init config)]
      (prn "System started with config:")
      (pprint (-> config
-                 (update-in [:db :password] mask)
-                 (update-in [:emailer :pass] mask)
-                 (update-in [:search :pass] mask)))
+                 (update-in [:db :password] mask)))
      system)))
 
 (defn stop-system! [system]
   (ig/halt! system))
 
 (defn -main [& args]
-  (start-system! config/default-config))
+  (start-system! config/config))

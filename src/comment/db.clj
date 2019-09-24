@@ -17,11 +17,11 @@
 
 (def-db-fns "sql/user.sql")
 
-(defn all-users [ds]
-  (jdbc/execute! ds ["select * from user"]))
-
 (comment
   (require '[integrant.repl.state])
   (def ds (get-in integrant.repl.state/system [:db :datasource]))
   (all-users ds)
-  (insert-user! ds {:email "aa@email" :password "pass" :display_name "aa"}))
+  (get-user-by-email ds {:email "aa@email"})
+  (require '[buddy.hashers :as hashers])
+  (insert-user! ds (-> {:email "aa@email" :password "pass" :display_name "aa"}
+                       (update :password hashers/derive))))

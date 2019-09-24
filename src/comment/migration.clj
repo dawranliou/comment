@@ -3,7 +3,7 @@
    [migratus.core :as migratus]
    [comment.config :as config]))
 
-(def config (merge (select-keys (config/default-config) [:db])
+(def config (merge (select-keys (config/config) [:db])
                    {:store         :database
                     :migration-dir "migrations"}))
 
