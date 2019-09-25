@@ -73,7 +73,9 @@
     {:data
      {:coercion   reitit.coercion.spec/coercion
       :muuntaja   m/instance
-      :middleware [;; query-params & form-params
+      :middleware [;; swagger feature
+                   swagger/swagger-feature
+                   ;; query-params & form-params
                    parameters/parameters-middleware
                    ;; content-negotiation
                    muuntaja/format-negotiate-middleware
@@ -89,5 +91,8 @@
                    coercion/coerce-request-middleware]}})
 
    (ring/routes
-    (swagger-ui/create-swagger-ui-handler {:path "/"})
+    (swagger-ui/create-swagger-ui-handler
+     {:path   "/"
+      :config {:validatorUrl     nil
+               :operationsSorter "alpha"}})
     (ring/create-default-handler))))
