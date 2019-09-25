@@ -6,9 +6,9 @@
    [reitit.ring.coercion :as coercion]
    [reitit.ring.middleware.exception :as exception]
    [reitit.ring.middleware.muuntaja :as muuntaja]
+   [reitit.ring.middleware.parameters :as parameters]
    [reitit.swagger :as swagger]
    [reitit.swagger-ui :as swagger-ui]
-   [ring.middleware.params :as params]
    [comment.db]))
 
 (def ok (constantly {:status 200 :body "ok"}))
@@ -31,11 +31,16 @@
                 {:status 200
                  :body   (comment.db/all-comments db)})}
 
-        :post {:summary "create comments"
+        :post {:summary    "create comments"
+               :parameters {:body {:name              string?
+                                   :slug              string?
+                                   :text              string?
+                                   :parent-comment-id int?}}
                :handler
-               (fn [{:keys [body-params]}]
+               (fn [{:keys [body-params] :as req}]
+                 (def req req)
                  {:status 201
-                  :body   (comment.db/create-comment body-params)})}}]
+                  :body   (comment.db/create-comment db body-params)})}}]
 
       ["/:slug"
        {:get {:summary    "get all comments for a page"
@@ -56,7 +61,7 @@
      {:coercion   reitit.coercion.spec/coercion
       :muuntaja   m/instance
       :middleware [;; query-params & form-params
-                   params/wrap-params
+                   parameters/parameters-middleware
                    ;; content-negotiation
                    muuntaja/format-negotiate-middleware
                    ;; encoding response body
