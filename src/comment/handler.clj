@@ -1,19 +1,24 @@
 (ns comment.handler
   (:require
    [reitit.ring :as ring]
-   [muuntaja.core :as m]
    [reitit.coercion.spec]
-   [reitit.ring.coercion :as coercion]
-   [reitit.ring.middleware.exception :as exception]
-   [reitit.ring.middleware.muuntaja :as muuntaja]
-   [reitit.ring.middleware.parameters :as parameters]
    [reitit.swagger :as swagger]
    [reitit.swagger-ui :as swagger-ui]
-   [comment.db]))
+   [reitit.ring.coercion :as coercion]
+   [reitit.dev.pretty :as pretty]
+   [reitit.ring.middleware.muuntaja :as muuntaja]
+   [reitit.ring.middleware.exception :as exception]
+   [reitit.ring.middleware.multipart :as multipart]
+   [reitit.ring.middleware.parameters :as parameters]
+   [reitit.ring.middleware.dev :as dev]
+   [reitit.ring.spec :as spec]
+   [spec-tools.spell :as spell]
+   [ring.adapter.jetty :as jetty]
+   [muuntaja.core :as m]))
 
 (def ok (constantly {:status 200 :body "ok"}))
 
-(defn create-app [{:keys [db]}]
+(def app
   (ring/ring-handler
    (ring/router
     [["/swagger.json"
@@ -26,29 +31,19 @@
 
       [""
        {:get {:summary "get comments"
-              :handler
-              (fn [_]
-                {:status 200
-                 :body   (comment.db/all-comments db)})}
+              :handler ok}
 
         :post {:summary    "create comments"
                :parameters {:body {:name              string?
                                    :slug              string?
                                    :text              string?
                                    :parent-comment-id int?}}
-               :handler
-               (fn [{:keys [body-params] :as req}]
-                 {:status 201
-                  :body   (comment.db/create-comment db body-params)})}}]
+               :handler    ok}}]
 
       ["/:slug"
        {:get {:summary    "get all comments for a page"
               :parameters {:path {:slug string?}}
-              :handler
-              (fn [{:keys [parameters]}]
-                (let [slug (-> parameters :path (select-keys [:slug]))]
-                  {:status 200
-                   :body   (comment.db/get-comments-by-slug db slug)}))}}]
+              :handler    ok}}]
 
       ["/id/:id"
        {:parameters {:path {:id int?}}}
@@ -57,42 +52,42 @@
                                       :slug              string?
                                       :text              string?
                                       :parent-comment-id int?}}
-                  :handler
-                  (fn [{:keys [path-params body-params]}]
-                    (let [params (merge (select-keys path-params [:id])
-                                        (select-keys body-params [:name :slug :text :parent-comment-id]))]
-                      {:status 200
-                       :body   (comment.db/update-comment db params)}))}
+                  :handler    ok}
 
             :delete {:summary "delete a comment"
-                     :handler
-                     (fn [{:keys [parameters]}]
-                       (let [id (-> parameters :path (select-keys [:id]))]
-                         {:status 200
-                          :body   (comment.db/delete-comment db id)}))}}]]]]
-    {:data
-     {:coercion   reitit.coercion.spec/coercion
-      :muuntaja   m/instance
-      :middleware [;; swagger feature
-                   swagger/swagger-feature
-                   ;; query-params & form-params
-                   parameters/parameters-middleware
-                   ;; content-negotiation
-                   muuntaja/format-negotiate-middleware
-                   ;; encoding response body
-                   muuntaja/format-response-middleware
-                   ;; exception handling
-                   exception/exception-middleware
-                   ;; decoding request body
-                   muuntaja/format-request-middleware
-                   ;; coercing response bodys
-                   coercion/coerce-response-middleware
-                   ;; coercing request parameters
-                   coercion/coerce-request-middleware]}})
+                     :handler ok}}]]]]
+    {;;:reitit.middleware/transform dev/print-request-diffs ;; pretty diffs
+     ;;:validate                    spec/validate           ;; enable spec validation for route data
+     ;;:reitit.spec/wrap            spell/closed            ;; strict top-level validation
+     :exception                   pretty/exception
+     :data                        {:coercion   reitit.coercion.spec/coercion
+                                   :muuntaja   m/instance
+                                   :middleware [;; swagger feature
+                                                swagger/swagger-feature
+                                                ;; query-params & form-params
+                                                parameters/parameters-middleware
+                                                ;; content-negotiation
+                                                muuntaja/format-negotiate-middleware
+                                                ;; encoding response body
+                                                muuntaja/format-response-middleware
+                                                ;; exception handling
+                                                exception/exception-middleware
+                                                ;; decoding request body
+                                                muuntaja/format-request-middleware
+                                                ;; coercing response bodys
+                                                coercion/coerce-response-middleware
+                                                ;; coercing request parameters
+                                                coercion/coerce-request-middleware
+                                                ;; multipart
+                                                multipart/multipart-middleware]}})
 
    (ring/routes
-    (swagger-ui/create-swagger-ui-handler
-     {:path   "/"
-      :config {:validatorUrl     nil
-               :operationsSorter "alpha"}})
+    (swagger-ui/create-swagger-ui-handler {:path "/"})
     (ring/create-default-handler))))
+
+(defn start []
+  (jetty/run-jetty #'app {:port 3000, :join? false})
+  (println "server running in port 3000"))
+
+(comment
+  (start))
