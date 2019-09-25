@@ -11,7 +11,7 @@
         com.zaxxer/HikariCP                    {:mvn/version "3.3.1"}
         metosin/ring-http-response             {:mvn/version "0.9.1"}
         migratus                               {:mvn/version "1.2.6"}
-        com.fzakaria/slf4j-timbre              {:mvn/version "0.3.14"}
+        ;;com.fzakaria/slf4j-timbre              {:mvn/version "0.3.14"}
         com.layerware/hugsql-core              {:mvn/version "0.5.1"}
         com.layerware/hugsql-adapter-next-jdbc {:mvn/version "0.5.1"}
         buddy                                  {:mvn/version "2.0.0"}}

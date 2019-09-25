@@ -38,7 +38,6 @@
                                    :parent-comment-id int?}}
                :handler
                (fn [{:keys [body-params] :as req}]
-                 (def req req)
                  {:status 201
                   :body   (comment.db/create-comment db body-params)})}}]
 
@@ -53,10 +52,24 @@
 
       ["/id/:id"
        {:parameters {:path {:id int?}}}
-       ["" {:put    {:summary "update a comment"
-                     :handler ok}
+       ["" {:put {:summary    "update a comment"
+                  :parameters {:body {:name              string?
+                                      :slug              string?
+                                      :text              string?
+                                      :parent-comment-id int?}}
+                  :handler
+                  (fn [{:keys [path-params body-params]}]
+                    (let [params (merge (select-keys path-params [:id])
+                                        (select-keys body-params [:name :slug :text :parent-comment-id]))]
+                      {:status 200
+                       :body   (comment.db/update-comment db params)}))}
+
             :delete {:summary "delete a comment"
-                     :handler ok}}]]]]
+                     :handler
+                     (fn [{:keys [parameters]}]
+                       (let [id (-> parameters :path (select-keys [:id]))]
+                         {:status 200
+                          :body   (comment.db/delete-comment db id)}))}}]]]]
     {:data
      {:coercion   reitit.coercion.spec/coercion
       :muuntaja   m/instance
