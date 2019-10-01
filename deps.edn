@@ -1,5 +1,10 @@
 {:deps {org.clojure/clojure     {:mvn/version "1.10.1"}
         ring/ring-jetty-adapter {:mvn/version "1.7.1"}
-        metosin/reitit          {:mvn/version "0.3.9"}}
+        metosin/reitit          {:mvn/version "0.3.9"}
+        integrant               {:mvn/version "0.7.0"}
+        integrant/repl          {:mvn/version "0.3.1"}}
 
- :paths ["resources" "src"]}
+ :paths ["resources" "src"]
+
+ :aliases
+ {:start-server {:main-opts ["-m" "comment.system"]}}}

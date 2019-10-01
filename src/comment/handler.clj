@@ -14,11 +14,15 @@
    [reitit.ring.spec :as spec]
    [spec-tools.spell :as spell]
    [ring.adapter.jetty :as jetty]
-   [muuntaja.core :as m]))
+   [muuntaja.core :as m]
+   [comment.middleware :as mw]))
 
-(def ok (constantly {:status 200 :body "ok"}))
+(defn ok [{:keys [db] :as request}]
+  (println "db:"db)
+  {:status 200 :body "ok"})
 
-(def app
+(defn create-app
+  [db]
   (ring/ring-handler
    (ring/router
     [["/swagger.json"
@@ -59,35 +63,31 @@
     {;;:reitit.middleware/transform dev/print-request-diffs ;; pretty diffs
      ;;:validate                    spec/validate           ;; enable spec validation for route data
      ;;:reitit.spec/wrap            spell/closed            ;; strict top-level validation
-     :exception                   pretty/exception
-     :data                        {:coercion   reitit.coercion.spec/coercion
-                                   :muuntaja   m/instance
-                                   :middleware [;; swagger feature
-                                                swagger/swagger-feature
-                                                ;; query-params & form-params
-                                                parameters/parameters-middleware
-                                                ;; content-negotiation
-                                                muuntaja/format-negotiate-middleware
-                                                ;; encoding response body
-                                                muuntaja/format-response-middleware
-                                                ;; exception handling
-                                                exception/exception-middleware
-                                                ;; decoding request body
-                                                muuntaja/format-request-middleware
-                                                ;; coercing response bodys
-                                                coercion/coerce-response-middleware
-                                                ;; coercing request parameters
-                                                coercion/coerce-request-middleware
-                                                ;; multipart
-                                                multipart/multipart-middleware]}})
+     :exception pretty/exception
+     :data      {:db         db
+                 :coercion   reitit.coercion.spec/coercion
+                 :muuntaja   m/instance
+                 :middleware [;; swagger feature
+                              swagger/swagger-feature
+                              ;; query-params & form-params
+                              parameters/parameters-middleware
+                              ;; content-negotiation
+                              muuntaja/format-negotiate-middleware
+                              ;; encoding response body
+                              muuntaja/format-response-middleware
+                              ;; exception handling
+                              exception/exception-middleware
+                              ;; decoding request body
+                              muuntaja/format-request-middleware
+                              ;; coercing response bodys
+                              coercion/coerce-response-middleware
+                              ;; coercing request parameters
+                              coercion/coerce-request-middleware
+                              ;; multipart
+                              multipart/multipart-middleware
+
+                              mw/db]}})
 
    (ring/routes
     (swagger-ui/create-swagger-ui-handler {:path "/"})
     (ring/create-default-handler))))
-
-(defn start []
-  (jetty/run-jetty #'app {:port 3000, :join? false})
-  (println "server running in port 3000"))
-
-(comment
-  (start))
